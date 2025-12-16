@@ -1,6 +1,6 @@
 ### Create HTTPSRoutes for Each Hostname
 
-In this step, you will define HTTPRoute resources to route traffic from your Gateway ``my-tls-gateway` to the backend services. 
+In this step, you will define HTTPRoute resources to route traffic from your Gateway `my-tls-gateway` to the backend services. 
 Each hostname requires its own HTTPRoute, and each route must include rules for all paths associated with that host. The Gateway will handle TLS termination using the secret `my-secret` for HTTPS listeners.
 
 You’ll create one route per hostname: `app.home.local` and `app.contact.local`.
