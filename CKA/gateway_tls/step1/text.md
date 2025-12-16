@@ -9,11 +9,15 @@ If you’re using cert-manager, you’ll need to define two resources:
 
 - An Issuer named `my-issuer`, which defines how certificates are signed,
 
-- A Certificate named `multi-cert`, which requests and stores the TLS credentials.
+- A Certificate named `multi-cert`, which requests the TLS certificate and private key and stores them in a Kubernetes TLS Secret named `my-secret`.
 
-If you choose OpenSSL, make sure to include your hostnames (CN and SAN fields) when generating the certificate, and then create the corresponding Kubernetes Secret to store it.
+Make sure to include the required hostnames in the certificate definition:
 
-The secret will have a name `my-secret`.
+- `app.home.local`
+
+- `app.contact.local`
+
+Alternatively, if you choose to use **OpenSSL**, ensure that these hostnames are included in both the **Common Name (CN)** and **Subject Alternative Name (SAN)** fields when generating the certificate. Afterward, create a Kubernetes TLS Secret named `my-secret` to store the generated certificate and private key.
 
 <details>
 <summary>Show commands / answers</summary>
