@@ -16,7 +16,7 @@ In this step, you will:
 sudo kubeadm upgrade plan
 
 # Apply upgrade to the controlplane
-sudo kubeadm upgrade apply 1.34.1
+sudo kubeadm upgrade apply < most recent version >
 ```
 
 </p>
