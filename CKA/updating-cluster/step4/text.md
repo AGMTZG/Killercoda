@@ -20,7 +20,7 @@ kubectl drain ubuntu --ignore-daemonsets
 
 # Upgrade kubelet
 sudo apt-mark unhold kubelet
-sudo apt install -y kubelet=1.34.1-1.1
+sudo apt install -y kubelet=< most recent version >
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
