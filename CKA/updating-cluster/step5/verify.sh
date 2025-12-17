@@ -2,7 +2,7 @@
 
 installed_kubeadm=$(kubeadm version -o short)
 installed_kubelet=$(kubelet --version 2>/dev/null | awk '{print $2}')
-installed_kubectl=$(kubectl version --client -o short | awk '{print $3}')
+installed_kubectl=$(kubectl version --client | head -n 1 | awk '{print $3}')
 
 if [ "$installed_kubeadm" == "$installed_kubelet" ] && [ "$installed_kubeadm" == "$installed_kubectl" ]; then
     echo "kubeadm, kubelet, and kubectl are all on the same version"
