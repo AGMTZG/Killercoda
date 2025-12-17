@@ -11,7 +11,7 @@ In this step: before upgrading kubeadm, you must:
 - Ensure the kubeadm package is not on hold.
 - Update the package list on the machine.
 - Check the available versions of kubeadm.
-- Ensure the kubeadm package is at the most recent version(in my case is 1.34.1-1.1, but in order to get to the next step you should install the most recent kubeadm version).
+- Ensure the kubeadm package is at the most recent version (In order to get to the next step you should install the most recent kubeadm version).
 - Mark the kubeadm package as held once the update is complete.
 
 Note: You can use apt-cache madison to see the packages versions.
