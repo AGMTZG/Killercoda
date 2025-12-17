@@ -15,7 +15,7 @@ In this step, you will:
 ```bash
 # Upgrade kubectl to the same version as cluster
 sudo apt-mark unhold kubectl
-sudo apt install -y kubectl=1.34.1-1.1
+sudo apt install -y kubectl=< most recent version >
 sudo apt-mark hold kubectl
 ```
 
