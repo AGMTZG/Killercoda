@@ -28,11 +28,11 @@ sudo apt-mark unhold kubeadm
 sudo apt update
 sudo apt-cache madison kubeadm
 
-kubeadm | 1.34.1-1.1 | https://pkgs.k8s.io/core:/stable:/v1.34/deb  Packages
+kubeadm | < most recent version > | https://pkgs.k8s.io/core:/stable:/v1.34/deb  Packages
 kubeadm | 1.34.0-1.1 | https://pkgs.k8s.io/core:/stable:/v1.34/deb  Packages
 
 # Install the target kubeadm version
-sudo apt install kubeadm=1.34.1-1.1
+sudo apt install kubeadm=< most recent version >
 sudo apt-mark hold kubeadm
 ```
 
