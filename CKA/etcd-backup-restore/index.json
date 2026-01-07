@@ -3,7 +3,8 @@
   "description": "Learn how to perform an etcd backup and restore in Kubernetes using etcdctl.",
   "details": {
     "intro": {
-      "text": "intro.md"
+      "text": "intro.md",
+      "background": "startup.sh"
     },
     "steps": [
       { "title": "Identify the etcd instance", "text": "step1/text.md", "verify": "step1/verify.sh" },
