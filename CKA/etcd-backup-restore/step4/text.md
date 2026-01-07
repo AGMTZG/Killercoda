@@ -12,7 +12,7 @@ Tasks:
 
 - The restored data directory will be: `/mnt/etcd-data`
 
-Note: The checks may fail until the kubelet has started the **API server** and the **Controller Manager**, so wait for them to be fully running before proceeding.
+Note: It is expected that **kubectl** may be temporarily unavailable until the **kubelet** recreates the static pods. The **API server** may take some time to start, so you can proceed to the next step without waiting.
 
 <details>
 <summary>Show commands / answers</summary>
