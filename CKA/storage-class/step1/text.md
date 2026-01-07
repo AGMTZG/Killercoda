@@ -93,7 +93,7 @@ volumeBindingMode: WaitForFirstConsumer
 mkdir -p /opt/storage/
 
 # Then create the command
-kubectl get storageclass -o custom-columns=NAME:.metadata.name,DEFAULT:.metadata.annotations."storageclass\.kubernetes\.io/is-default-class" | awk 'NR==1 || /true/' > /opt/storage/default-sc.txt
+kubectl get storageclass -o jsonpath='{range .items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")]}{.metadata.name}{"\t"}{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}'
 ```
 
 </p>
