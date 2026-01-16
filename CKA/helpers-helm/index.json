@@ -1,0 +1,26 @@
+{
+  "title": "Using Helm Helper Templates for a Database Application",
+  "description": "In this scenario, you will learn how to define and use Helm helper templates to keep names and labels consistent across Kubernetes resources, using a MongoDB-based example.",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      { "title": "Create the helm chart and update Helm Helper Templates", "text": "step1/text.md" },
+      { "title": "Modify the helm chart templates", "text": "step2/text.md" },
+      { "title": "Install the helm chart", "text": "step5/text.md", "verify": "step3/verify.sh" }
+    ],
+    "assets": {
+      "host01": [
+        {"file": "headless-service.yaml", "target": "~/", "chmod": "+w"},
+        {"file": "statefulset.yaml", "target": "~/", "chmod": "+w"}
+      ]
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

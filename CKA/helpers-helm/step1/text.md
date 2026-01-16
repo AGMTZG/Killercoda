@@ -1,11 +1,12 @@
-### Update Helm Helper Templates
+### Create the helm chart and update Helm Helper Templates
 
 In this step, you will create Helm helper templates. Helpers are small reusable functions that help you avoid repeating the same values (like names and labels) across your Kubernetes manifests.
 
 Tasks: 
 
-**Step 1: Reset the helpers file**
+**Step 1: Create the chart and reset the helpers file**
 
+- Create a new Helm chart named `database-app`.
 - Go to the `templates/` directory.
 - Delete the existing `_helpers.tpl` file.
 - Create a new empty file called `_helpers.tpl`.

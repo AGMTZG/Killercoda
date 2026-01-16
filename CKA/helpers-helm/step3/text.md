@@ -1,6 +1,6 @@
 ### Install the Helm chart
 
-After configuring the Helm chart templates and `values.yaml`, the final step is to deploy your MongoDB chart to the Kubernetes cluster. This step ensures that the StatefulSet and its dependent Headless Service are created according to the parameters you defined.
+The final step is to deploy your MongoDB chart to the Kubernetes cluster. This step ensures that the StatefulSet and its dependent Headless Service are created according to the parameters you defined.
 
 Task:
 
