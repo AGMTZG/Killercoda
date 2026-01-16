@@ -8,17 +8,23 @@ You will:
 
 - In your **home directory**, inside the `app` folder, create an `overlays` folder with a `subfolder dev`. Place the `kustomization.yaml` file inside `overlays/dev`.
 
-- Update the MySQL image to `mysql:dev`.
+### StatefulSet - Name: mysql
+
+- Update the MySQL image `mysql` to `mysql:dev`.
 
 - Add the label `env: dev` to all resources.
 
 - Create a `patch.json` file to set the environment variable `DEBUG=true`.
 
-- In the same `patch.json`, add an initContainer using the BusyBox image to set the appropriate `mysql:mysql` ownership on `/var/lib/mysql` prior to starting the main container..
+- In the same `patch.json`, add an initContainer using the BusyBox image to set the correct `mysql:mysql` ownership on `/var/lib/mysql` before the main container starts by running the following command:
+
+```bash
+chown -R mysql:mysql /var/lib/mysql
+```
 
 - Generate a ConfigMap named `db-config` that includes the literals `DB_HOST=localhost` and `DB_PORT=3306`.
 
-- Create a Secret named `db_secret` that includes the literals `USERNAME=admin` and `PASSWORD=asdfqwerty`.
+- Create a Secret named `db-secret` that includes the literals `USERNAME=admin` and `PASSWORD=asdfqwerty`.
 
 After completing these tasks, your **dev** overlay will be ready for deployment.
 
