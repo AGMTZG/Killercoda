@@ -1,34 +1,68 @@
 ### Update Helm Helper Templates
 
-The next step is to create Helm helper templates. These helpers will allow you to generate consistent resource names and labels across all your Kubernetes objects.
+In this step, you will create Helm helper templates. Helpers are small reusable functions that help you avoid repeating the same values (like names and labels) across your Kubernetes manifests.
 
-Tasks:
+**What you will do**
 
-- Delete the `_helpers.tpl` file in the `templates/` directory and create a new one.
-- In the new `_helpers.tpl`, create a helper function `database-app.fullname` that generates a unique name for your resources by combining the **release name**, a **hyphen**, and the **chart name**.
+You will work with the `_helpers.tpl` file inside the templates/ directory and define a few helpers that will be reused by other templates in the chart.
+
+Tasks: 
+
+**Step 1: Reset the helpers file**
+
+- Go to the `templates/` directory.
+- Delete the existing `_helpers.tpl` file.
+- Create a new empty file called `_helpers.tpl`.
+
+
+**Step 2: Define the chart name helper**
+
+In the new `_helpers.tpl`, create a helper called `database-app.name`. This helper should have the chart name:
+
+**Step 3: Create a helper for resource names**
+
+Then, create a helper called `database-app.fullname`. This helper should generate a unique name for Kubernetes resources by combining:
+
+- the Helm release name
+- a hyphen (-)
+- the chart name
+
+Expected format:
 
 ```bash
-# Example
 <release-name>-<chart-name>
 ```
+This pattern ensures that resources remain unique when the same chart is installed multiple times with different release names.
 
-- In the **same** file, create another helper function `database-app.labels` that generates a consistent set of labels for all resources, using the following keys: `app.kubernetes.io/name` for the application name and `app.kubernetes.io/instance` for the release name.
+**Step 4: Create a helper for common labels**
+
+In the same file, create another helper called `database-app.labels`. This helper will return a common set of labels that should be added to all Kubernetes resources in the chart. Use the following labels:
+
+- **app.kubernetes.io/name:** the application (chart) name
+- **app.kubernetes.io/instance:** the Helm release name
+
+Expected format:
 
 ```bash
-# Example
-app.kubernetes.io/name: <applicacion-name>
+app.kubernetes.io/name: <application-name>
 app.kubernetes.io/instance: <release-name>
 ```
+These labels are part of the recommended Kubernetes labeling conventions.
 
-- In the **same** file, add one more helper function `database-app.selectorLabels` that provides the minimal set of labels for resource selectors, using the key: `app.kubernetes.io/name` for the application name.
+**Step 5: Create a helper for selector labels**
+
+Next, create a helper called `database-app.selectorLabels`. This helper will be used in selectors (for example, in Deployments and Services) and should contain only the minimum required labels.
+Use this label:
+
+- **app.kubernetes.io/name**: the application (chart) name
 
 ```bash
-# Example
-app.kubernetes.io/name: <applicacion-name>
+app.kubernetes.io/name: <application-name>
 ```
 
-- In the **same** file, add a final helper called `database-app.name` that returns the chart name.
-
+**Key concepts to remember**
+- Helpers are defined using `define` inside `_helpers.tpl`
+- Helpers are reused in other templates using `include`
 
 <details>
 <summary>Show commands / answers</summary>
@@ -46,6 +80,14 @@ vim _helpers.tpl
 
 # _helpers.tpl
 
+{{- define "database-app.name" -}}
+{{ .Chart.Name }}
+{{- end }}
+
+{{- define "database-app.fullname" -}}
+{{ .Release.Name }}-{{ .Chart.Name }}
+{{- end }}
+
 {{- define "database-app.labels" -}}
 app.kubernetes.io/name: {{ include "database-app.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
@@ -53,14 +95,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "database-app.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "database-app.name" . }}
-{{- end }}
-
-{{- define "database-app.fullname" -}}
-{{ .Release.Name }}-{{ .Chart.Name }}
-{{- end }}
-
-{{- define "database-app.name" -}}
-{{ .Chart.Name }}
 {{- end }}
 ```
 
