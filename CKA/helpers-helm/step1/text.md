@@ -66,6 +66,9 @@ app.kubernetes.io/name: <application-name>
 <p>
 
 ```bash
+# Create the helm chart
+helm create database-app
+
 # Navigate to the templates directory
 cd database-app/templates
 
