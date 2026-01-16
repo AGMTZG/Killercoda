@@ -4,13 +4,17 @@ In this step, you will customize the production environment for the database usi
 
 You will:
 
-- Update the MySQL image to `mysql:prod`.
+- In your **home directory**, inside the `app` folder, create an `overlays` folder with a `subfolder prod`. Place the `kustomization.yaml` file inside `overlays/prod`.
+
+### StatefulSet - Name: mysql
+ 
+- Update the MySQL image `mysql` to `mysql:prod`.
 
 - Add the label `env: prod` to all resources.
 
-- Create a ConfigMap named `db_host` that includes the literals `DB_HOST=mysql-prod.company.local` and `DB_PORT=3306`.
+- Create a ConfigMap named `db-host` that includes the literals `DB_HOST=mysql-prod.company.local` and `DB_PORT=3306`.
 
-- Create a Secret named `db_secret` that includes the literals `USERNAME=prod_admin` and `PASSWORD=G7hT9pX2!zQ4`.
+- Create a Secret named `db-secret` that includes the literals `USERNAME=prod_admin` and `PASSWORD=G7hT9pX2!zQ4`.
 
 - Use `patch-prod.json` to add tolerations for nodes with the taint `prod=true:NoSchedule`.
 
