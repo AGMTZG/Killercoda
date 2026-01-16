@@ -2,10 +2,6 @@
 
 In this step, you will create Helm helper templates. Helpers are small reusable functions that help you avoid repeating the same values (like names and labels) across your Kubernetes manifests.
 
-**What you will do**
-
-You will work with the `_helpers.tpl` file inside the templates/ directory and define a few helpers that will be reused by other templates in the chart.
-
 Tasks: 
 
 **Step 1: Reset the helpers file**
