@@ -6,9 +6,9 @@
       "text": "intro.md"
     },
     "steps": [
-      { "title": "Create the helm chart and update Helm Helper Templates", "text": "step1/text.md" },
-      { "title": "Modify the helm chart templates", "text": "step2/text.md" },
-      { "title": "Install the helm chart", "text": "step5/text.md", "verify": "step3/verify.sh" }
+      { "title": "Create the helm chart and update Helm Helper Templates", "text": "step1/text.md", "verify": "step1/verify.sh" },
+      { "title": "Modify the helm chart templates", "text": "step2/text.md", "verify": "step2/verify.sh"},
+      { "title": "Install the helm chart", "text": "step3/text.md", "verify": "step3/verify.sh" }
     ],
     "assets": {
       "host01": [

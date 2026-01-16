@@ -1,6 +1,6 @@
 ### Modify the Helm Chart Templates
 
-In this step, you will modify the Helm chart templates to deploy a MongoDB database using a StatefulSet and a headless Service. You will reuse the helpers defined in `_helpers.tpl` and make key parts of the chart configurable through `values.yaml`.
+In this step, you will modify the Helm chart templates to deploy a MongoDB database using a StatefulSet and a headless Service. You will reuse the helpers defined in `_helpers.tpl`.
 
 Tasks:
 
