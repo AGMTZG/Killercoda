@@ -1,33 +1,63 @@
 ### Modify the Helm Chart Templates
 
-After generating the base chart, tailor it for a MongoDB database:
+In this step, you will modify the Helm chart templates to deploy a MongoDB database using a StatefulSet and a headless Service. You will reuse the helpers defined in `_helpers.tpl` and make key parts of the chart configurable through `values.yaml`.
+
+Tasks:
+
+**Step 1: Clean up the default templates**
 
 Inside the templates/ directory:
 
-- Remove all default Helm chart templates, including `NOTES.txt`.
-
+- Remove all default Helm chart templates, including `NOTES.txt`, except for `_helpers.tpl` and the folder `tests`.
 - Move all provided YAML files from the `~/` (home directory) into `templates/`.
 
-**StatefulSet**:
+This ensures the chart only contains resources relevant to MongoDB.
 
-- Use the values defined in `_helpers.tpl`:  **metadata.name** (`database-app.name`),  **metadata.labels** (`database-app.labels`), **spec.selector.matchLabels** (`database-app.selectorLabels`), and **template.metadata.labels** (`database-app.labels`).
 
-- Configure **replicas** (`.Values.replicaCount`), **container image** (`.Values.image.repository`) and **tag** (`.Values.image.tag`), **port container** (use with + toYaml for the ports section, `.Values.statefulset.port`) via `values.yaml`.
+**Step 2: Update the StatefulSet template**
 
-- Add a toggle (`.Values.statefulset.enabled`) in `values.yaml` to enable or disable the creation of the statefulset at will.
+Modify the StatefulSet template to use values and helpers instead of hardcoded fields.
 
-**Headless Service**:
-- Create a named for the headless service (.Values.service.headlessName) via `values.yaml`
+**Metadata and labels**
 
-- Make ports (use with + toYaml for the ports section, `.Values.service.port`) configurable via `values.yaml`.
+Use the helpers defined in `_helpers.tpl`:
 
-- Only create the service if the StatefulSet is enabled.
+- `metadata.name`: Use database-app.name
+- `metadata.labels`: Use database-app.labels
+- `spec.selector.matchLabels`: Use database-app.selectorLabels
+- `template.metadata.labels`: Use database-app.labels
+
+This ensures labels are consistent across all resources.
+
+**Step 3: Update the headless Service template**
+
+Modify the Headless Service template to use the helpers defined in `_helpers.tpl` instead of hardcoded values.
+
+**Metadata and selectors**
+
+Use the helpers to ensure consistency with the StatefulSet:
+
+- `metadata.name`: Use database-app.name.
+- `metadata.labels`: Use database-app.labels.
+- `spec.selector`: Use database-app.selectorLabels.
+
+This ensures the Headless Service correctly selects the Pods created by the StatefulSet and shares the same naming and labeling conventions.
 
 <details>
 <summary>Click here to see helpers.tpl</summary>
 <p>
 
 ```bash
+# _helpers.tpl
+
+{{- define "database-app.name" -}}
+{{ .Chart.Name }}
+{{- end }}
+
+{{- define "database-app.fullname" -}}
+{{ .Release.Name }}-{{ .Chart.Name }}
+{{- end }}
+
 {{- define "database-app.labels" -}}
 app.kubernetes.io/name: {{ include "database-app.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
@@ -35,14 +65,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "database-app.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "database-app.name" . }}
-{{- end }}
-
-{{- define "database-app.fullname" -}}
-{{ .Release.Name }}-{{ .Chart.Name }}
-{{- end }}
-
-{{- define "database-app.name" -}}
-{{ .Chart.Name }}
 {{- end }}
 ```
 </p>
@@ -66,17 +88,15 @@ cd
 mv statefulset.yaml headless-service.yaml database-app/templates/
 
 # templates/statefulset.yaml
-
-{{- if .Values.statefulset.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "database-app.fullname" . }}
+  name: {{ include "database-app.name" . }}
   labels:
     {{- include "database-app.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Values.service.headlessName }}
-  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ include "database-app.name" . }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "database-app.selectorLabels" . | nindent 6 }}
@@ -87,25 +107,22 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: "{{ .Values.statefulset.image.repository }}:{{ .Values.statefulset.image.tag }}"
+          image: mongo:6.0
           ports:
-            {{- with .Values.statefulset.port }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+            - containerPort: 27017
           env:
-          - name: MONGO_INITDB_ROOT_USERNAME
-            value: "mongoadmin"
-          - name: MONGO_INITDB_ROOT_PASSWORD
-            value: "123456789"
-{{- end }}
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: mongoadmin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: 123456789
+
 
 # templates/headless-service.yaml
 
-{{- if .Values.statefulset.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.service.headlessName }}
+  name: {{ include "database-app.name" . }}
   labels:
     {{- include "database-app.labels" . | nindent 4 }}
 spec:
@@ -113,10 +130,8 @@ spec:
   selector:
     {{- include "database-app.selectorLabels" . | nindent 4 }}
   ports:
-    {{- with .Values.service.port }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-{{- end }}
+    - port: 27017
+      targetPort: 27017
 ```
 
 </p>
