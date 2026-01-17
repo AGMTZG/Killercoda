@@ -10,17 +10,13 @@ You will:
  
 - Update the MySQL image `mysql` to `mysql:prod`.
 
-- Add the label `env: prod` to all resources.
+- Add nameSuffix `-prod`, the label `env: prod` and the annotation  `resource: production` to all resources.
 
-- Create a ConfigMap named `db-host` that includes the literals `DB_HOST=mysql-prod.company.local` and `DB_PORT=3306`.
+- Disable the name suffix hash for both the ConfigMap and the Secret.
 
-- Create a Secret named `db-secret` that includes the literals `USERNAME=prod_admin` and `PASSWORD=G7hT9pX2!zQ4`.
+- Create a ConfigMap named `db-host` that includes the literals `DB_HOST=mysql-prod.company.local` and `DB_PORT=3306`, , and use Kustomize replacements to inject these values into the appropriate environment variables of the MySQL container.
 
-- Use `patch-prod.json` to add tolerations for nodes with the taint `prod=true:NoSchedule`.
-
-- In the same `patch-prod.json`, define resource requests and limits for CPU and memory:
-  - Requests: cpu: `500m`, memory: `1Gi`
-  - Limits: cpu: `1`, memory: `2Gi`
+- Create a Secret named `db-secret` that includes the literals `USERNAME=prod_admin` and `PASSWORD=G7hT9pX2!zQ4`, , and use Kustomize replacements to inject these values into the appropriate environment variables of the MySQL container.
 
 After completing these tasks, your **prod** overlay will be ready for deployment.
 
@@ -33,11 +29,12 @@ After completing these tasks, your **prod** overlay will be ready for deployment
 └── overlays
     └── prod
         └── kustomization.yaml
-        └── patch-prod.json
 
 # kustomization.yaml
 resources:  
 - ../../base  
+
+nameSuffix: -prod
   
 images:  
   - name: mysql  
@@ -48,7 +45,10 @@ labels:
 - pairs:  
     env: prod 
   includeSelectors: true  
-  includeTemplates: true  
+  includeTemplates: true
+
+annotations:
+  resource: production
   
 configMapGenerator:  
 - name: db_host  
@@ -61,44 +61,54 @@ secretGenerator:
   literals:  
     - USERNAME=prod_admin 
     - PASSWORD=G7hT9pX2!zQ4 
- 
-patches:  
-- target:  
-    group: apps  
-    version: v1  
-    kind: StatefulSet  
-    name: mysql  
-  path: patch-prod.json
 
-# patch-prod
-[
-  {
-    "op": "add",
-    "path": "/spec/template/spec/tolerations",
-    "value": [
-      {
-        "key": "prod",
-        "operator": "Equal",
-        "value": "true",
-        "effect": "NoSchedule"
-      }
-    ]
-  },
-  {
-    "op": "add",
-    "path": "/spec/template/spec/containers/0/resources",
-    "value": {
-      "requests": {
-        "cpu": "500m",
-        "memory": "1Gi"
-      },
-      "limits": {
-        "cpu": "1",
-        "memory": "2Gi"
-      }
-    }
-  }
-]
+generatorOptions:
+  disableNameSuffixHash: true
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: db-host
+      fieldPath: data.DB_HOST
+    targets:
+      - select:
+          kind: StatefulSet
+          name: mysql
+        fieldPaths:
+          - spec.template.spec.containers.[name=mysql].env.[name=DB_HOST].value
+
+  - source:
+      kind: ConfigMap
+      name: db-host
+      fieldPath: data.DB_PORT
+    targets:
+      - select:
+          kind: StatefulSet
+          name: mysql
+        fieldPaths:
+          - spec.template.spec.containers.[name=mysql].env.[name=DB_PORT].value
+
+  - source:
+      kind: Secret
+      name: db-secret
+      fieldPath: data.USERNAME
+    targets:
+      - select:
+          kind: StatefulSet
+          name: mysql
+        fieldPaths:
+          - spec.template.spec.containers.[name=mysql].env.[name=MYSQL_USER].value
+
+  - source:
+      kind: Secret
+      name: db-secret
+      fieldPath: data.PASSWORD
+    targets:
+      - select:
+          kind: StatefulSet
+          name: mysql
+        fieldPaths:
+          - spec.template.spec.containers.[name=mysql].env.[name=MYSQL_PASSWORD].value
 ```
 
 </p>

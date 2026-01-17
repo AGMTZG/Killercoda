@@ -1,4 +1,3 @@
-# statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -23,6 +22,14 @@ spec:
             - containerPort: 3306
               name: mysql
           env:
+            - name: DB_HOST
+              value: ""
+            - name: DB_PORT
+              value: ""
+            - name: MYSQL_USER
+              value: ""
+            - name: MYSQL_PASSWORD
+              value: ""
             - name: MYSQL_ROOT_PASSWORD
               value: "12345678"
           volumeMounts:
@@ -37,3 +44,4 @@ spec:
         resources:
           requests:
             storage: 1Gi
+

@@ -18,42 +18,60 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+# Image check
 echo "$GENERATED_YAML" | grep -q "image: mysql:dev" || {
-    echo "MySQL image not set to 'dev' in generated YAML"
+    echo "MySQL image not set to mysql:dev"
     exit 1
 }
 
+# nameSuffix check
+echo "$GENERATED_YAML" | grep -q "name: mysql-dev" || {
+    echo "nameSuffix '-dev' not applied"
+    exit 1
+}
+
+# Label check
 echo "$GENERATED_YAML" | grep -q "env: dev" || {
-    echo "Label 'env: dev' not set in generated YAML"
+    echo "Label 'env: dev' missing"
     exit 1
 }
 
-echo "$GENERATED_YAML" | grep -q "DB_HOST: localhost" || {
-    echo "ConfigMap DB_HOST not set correctly"
-    exit 1
-}
-echo "$GENERATED_YAML" | grep -q "DB_PORT: \"3306\"" || {
-    echo "ConfigMap DB_PORT not set correctly"
+# Annotation check
+echo "$GENERATED_YAML" | grep -q "resource: development" || {
+    echo "Annotation 'resource: development' missing"
     exit 1
 }
 
-echo "$GENERATED_YAML" | grep -q "USERNAME: YWRtaW4=" || {
-    echo "Secret USERNAME not set correctly"
+# Replicas check
+REPLICAS=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="StatefulSet") | .spec.replicas
+' -)
+
+if [[ "$REPLICAS" != "2" ]]; then
+    echo "StatefulSet replicas not set to 2"
     exit 1
-}
-echo "$GENERATED_YAML" | grep -q "PASSWORD: YXNkZnF3ZXJ0eQ==" || {
-    echo "Secret PASSWORD not set correctly"
+fi
+
+# InitContainer checks
+INIT_CONTAINER=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="StatefulSet") |
+  .spec.template.spec.initContainers[] |
+  select(.name=="init-permissions")
+' -)
+
+if [[ -z "$INIT_CONTAINER" ]]; then
+    echo "init-permissions initContainer missing"
+    exit 1
+fi
+
+echo "$INIT_CONTAINER" | grep -q "busybox" || {
+    echo "init-permissions does not use busybox image"
     exit 1
 }
 
-grep -q "DEBUG" "$BASE_DIR/patch.json" || {
-    echo "Environment variable DEBUG not set in patch.json"
+echo "$INIT_CONTAINER" | grep -q "chown -R mysql:mysql /var/lib/mysql" || {
+    echo "init-permissions command is incorrect"
     exit 1
 }
 
-grep -q "init-permissions" "$BASE_DIR/patch.json" || {
-    echo "InitContainer to fix permissions missing in patch.json"
-    exit 1
-}
-
-echo "All checks passed!"
+echo "All checks passed for dev overlay!"

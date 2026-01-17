@@ -12,19 +12,17 @@ You will:
 
 - Update the MySQL image `mysql` to `mysql:dev`.
 
-- Add the label `env: dev` to all resources.
+- Add nameSuffix `-dev`, the label `env: dev` and the annotation  `resource: development` to all resources.
 
-- Create a `patch.json` file to set the environment variable `DEBUG=true`.
+- Create a `patch.json` that updates the StatefulSet to run 2 replicas.
 
-- In the same `patch.json`, add an initContainer using the BusyBox image to set the correct `mysql:mysql` ownership on `/var/lib/mysql` before the main container starts by running the following command:
+- In the same `patch.json`, add an initContainer using the `busybox` image to set the correct `mysql:mysql` ownership on `/var/lib/mysql` before the main container starts by running the following command:
 
 ```bash
 chown -R mysql:mysql /var/lib/mysql
 ```
 
-- Generate a ConfigMap named `db-config` that includes the literals `DB_HOST=localhost` and `DB_PORT=3306`.
-
-- Create a Secret named `db-secret` that includes the literals `USERNAME=admin` and `PASSWORD=asdfqwerty`.
+Note: Do not create ConfigMaps or Secrets in the dev overlay. The base manifests provide the required configuration values, and Kustomize replacements will only be introduced in the prod overlay to demonstrate environment-specific configuration injection.
 
 After completing these tasks, your **dev** overlay will be ready for deployment.
 
@@ -53,7 +51,9 @@ resources:
 # kustomization.yaml
 resources: 
 - ../../base 
- 
+
+nameSuffix: -dev
+
 images: 
   - name: mysql 
     newName: mysql 
@@ -64,18 +64,9 @@ labels:
     env: dev 
   includeSelectors: true 
   includeTemplates: true 
- 
-configMapGenerator: 
-- name: db-config 
-  literals: 
-    - DB_HOST=localhost 
-    - DB_PORT=3306 
- 
-secretGenerator: 
-- name: db-secret 
-  literals: 
-    - USERNAME=admin 
-    - PASSWORD=asdfqwerty 
+
+annotations:
+  resource: development
  
 patches: 
 - target: 
@@ -88,12 +79,9 @@ patches:
 # patch.json
 [
   {
-    "op": "add",
-    "path": "/spec/template/spec/containers/0/env/-",
-    "value": {
-      "name": "DEBUG",
-      "value": "true"
-    }
+    "op": "replace",
+    "path": "/spec/replicas",
+    "value": 2
   },
   {
     "op": "add",
@@ -105,7 +93,7 @@ patches:
         "command": ["sh", "-c", "chown -R mysql:mysql /var/lib/mysql"],
         "volumeMounts": [
           {
-            "name": "mysql_volume",
+            "name": "mysql-volume",
             "mountPath": "/var/lib/mysql"
           }
         ]
