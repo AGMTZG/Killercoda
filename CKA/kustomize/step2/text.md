@@ -51,13 +51,13 @@ commonAnnotations:
   resource: production
   
 configMapGenerator:  
-- name: db_host  
+- name: db-host
   literals:  
     - DB_HOST=mysql-prod.company.local 
     - DB_PORT=3306 
   
 secretGenerator:  
-- name: db_secret
+- name: db-secret
   literals:  
     - USERNAME=prod_admin 
     - PASSWORD=G7hT9pX2!zQ4 

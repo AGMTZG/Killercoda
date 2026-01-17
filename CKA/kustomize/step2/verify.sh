@@ -19,9 +19,9 @@ echo "$GENERATED_YAML" | grep -q "image: mysql:prod" || {
     exit 1
 }
 
-# nameSuffix check
+# nameSuffix check (StatefulSet)
 echo "$GENERATED_YAML" | grep -q "name: mysql-prod" || {
-    echo "nameSuffix '-prod' not applied"
+    echo "nameSuffix '-prod' not applied to StatefulSet"
     exit 1
 }
 
@@ -37,13 +37,13 @@ echo "$GENERATED_YAML" | grep -q "resource: production" || {
     exit 1
 }
 
-# ConfigMap checks
+# ConfigMap checks (nameSuffix applied)
 CONFIG_DB_HOST=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="ConfigMap" and .metadata.name=="db-host") | .data.DB_HOST
+  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.DB_HOST
 ' -)
 
 CONFIG_DB_PORT=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="ConfigMap" and .metadata.name=="db-host") | .data.DB_PORT
+  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.DB_PORT
 ' -)
 
 if [[ "$CONFIG_DB_HOST" != "mysql-prod.company.local" ]]; then
@@ -56,13 +56,13 @@ if [[ "$CONFIG_DB_PORT" != "3306" ]]; then
     exit 1
 fi
 
-# Secret checks
+# Secret checks (nameSuffix applied)
 SECRET_USERNAME=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="Secret" and .metadata.name=="db-secret") | .data.USERNAME
+  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.USERNAME
 ' -)
 
 SECRET_PASSWORD=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="Secret" and .metadata.name=="db-secret") | .data.PASSWORD
+  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.PASSWORD
 ' -)
 
 DECODED_USERNAME=$(echo "$SECRET_USERNAME" | base64 --decode)
@@ -80,7 +80,7 @@ fi
 
 # Replacement checks in StatefulSet
 STATEFULSET_ENV=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="StatefulSet") |
+  select(.kind=="StatefulSet" and .metadata.name=="mysql-prod") |
   .spec.template.spec.containers[] |
   select(.name=="mysql") |
   .env
