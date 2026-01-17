@@ -47,7 +47,7 @@ labels:
   includeSelectors: true  
   includeTemplates: true
 
-annotations:
+commonAnnotations:
   resource: production
   
 configMapGenerator:  
