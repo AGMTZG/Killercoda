@@ -1,37 +1,30 @@
 ### Enable ValidatingAdmissionPolicy Feature Gate in Your Cluster
 
-Before you can create and enforce a `ValidatingAdmissionPolicy`, you must ensure that the **feature gate** is enabled in your Kubernetes cluster. This feature allows Kubernetes to validate Pods against custom rules before they are persisted.
+Starting with **Kubernetes 1.30**, the **ValidatingAdmissionPolicy** feature has reached **General Availability (GA)** and is **enabled by default** in the API server. You no longer need to manually set a feature gate for it, and doing so in modern Kubernetes versions can cause the API server to reject the flag and fail to start.
 
-**Note:** In current Kubernetes versions, the `ValidatingAdmissionPolicy` feature gate is enabled by default, so you usually only need to verify it.
+Before creating and enforcing a **ValidatingAdmissionPolicy**, verify that your cluster version supports it and ensure the API server is running normally.
 
 Tasks:
 
-- Open the `kube-apiserver` manifest file: `/etc/kubernetes/manifests/kube-apiserver.yaml`.
+- **Check Your Kubernetes Version**
+  - Make sure your cluster is running Kubernetes 1.30 or newer. This can be done with:
 
-- Locate the **command** section that defines the **container's** arguments, check if the **ValidatingAdmissionPolicy feature gate** is present, and if not, add the following argument to enable it:
+```bash
+kubectl version --short
+```
+
+- **For Kubernetes 1.30+, ValidatingAdmissionPolicy is GA and enabled by default. Do not add a feature gate flag to kube-apiserver.yaml, as it may cause the API server to fail to start. Only clusters running older Kubernetes versions may require explicitly enabling the feature gate**
+  - If using an older version, try the following flag and add it to `/etc/kubernetes/manifests/apiserver.yaml` in the commands section.
 
 ```bash
 --feature-gates=ValidatingAdmissionPolicy=true
 ```
 
-- If you edited the file, Kubernetes will automatically restart the API server with the new feature gate.
-
-<details>
-<summary>Show commands / answers</summary>
-<p>
+- **Verify ValidatingAdmissionPolicy API Availability**
+  - You can use the following command to check if the ValidatingAdmissionPolicy is running:
 
 ```bash
-# Open the kube-apiserver manifest
-sudo vim /etc/kubernetes/manifests/kube-apiserver.yaml
-
-# Inspect the command arguments or add this flag if it’s missing
---feature-gates=ValidatingAdmissionPolicy=true
-
-# After adding the feature gate, save and exit
-
-# Check that kube-apiserver restarted successfully
-kubectl get pods -n kube-system | grep kube-apiserver
+kubectl api-resources | grep ValidatingAdmissionPolicy
 ```
 
-</p> 
-</details>
+If you see ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding listed, your API server supports them and is ready.
