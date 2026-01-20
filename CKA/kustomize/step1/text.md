@@ -16,7 +16,7 @@ You will:
 
 - Create a `patch.json` that updates the StatefulSet to run 2 replicas.
 
-- In the same `patch.json`, add an initContainer with the name `init-permissions`  using the `busybox` image to set the correct `mysql:mysql` ownership on `/var/lib/mysql` before the main container starts by running the following command:
+- In the same `patch.json`, add an initContainer named `init-permissions` using the `busybox` image, with a volumeMount called `mysql-volume`, to set the correct `mysql:mysql` ownership on `/var/lib/mysql` before the main container starts by running the following command:
 
 ```bash
 chown -R mysql:mysql /var/lib/mysql
