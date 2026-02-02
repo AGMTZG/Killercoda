@@ -7,11 +7,10 @@ if [[ ! -f "$BASE_DIR/kustomization.yaml" ]]; then
     exit 1
 fi
 
-GENERATED_YAML=$(kubectl kustomize "$BASE_DIR")
-if [[ $? -ne 0 ]]; then
+GENERATED_YAML=$(kubectl kustomize "$BASE_DIR") || {
     echo "Error: kustomize build failed."
     exit 1
-fi
+}
 
 # -------------------------------------------------
 # Helper function to get env values from StatefulSet
@@ -63,78 +62,80 @@ echo "$GENERATED_YAML" | grep -q "resource: production" || {
 # -----------------------------
 # ConfigMap checks
 # -----------------------------
-CONFIG_DB_HOST=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.DB_HOST
+CONFIG_MYSQL_HOST=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.MYSQL_HOST
 ' -)
 
-CONFIG_DB_PORT=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.DB_PORT
+CONFIG_MYSQL_PORT=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="ConfigMap" and .metadata.name=="db-host-prod") | .data.MYSQL_PORT
 ' -)
 
-if [[ "$CONFIG_DB_HOST" != "mysql-prod.company.local" ]]; then
-    echo "ConfigMap DB_HOST not correct"
+[[ "$CONFIG_MYSQL_HOST" == "mysql-prod.company.local" ]] || {
+    echo "ConfigMap MYSQL_HOST not correct"
     exit 1
-fi
+}
 
-if [[ "$CONFIG_DB_PORT" != "3306" ]]; then
-    echo "ConfigMap DB_PORT not correct"
+[[ "$CONFIG_MYSQL_PORT" == "3306" ]] || {
+    echo "ConfigMap MYSQL_PORT not correct"
     exit 1
-fi
+}
 
 # -----------------------------
 # Secret checks
 # -----------------------------
-SECRET_USERNAME=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.USERNAME
+SECRET_MYSQL_USER=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.MYSQL_USER
 ' -)
 
-SECRET_PASSWORD=$(echo "$GENERATED_YAML" | yq eval '
-  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.PASSWORD
+SECRET_MYSQL_PASSWORD=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.MYSQL_PASSWORD
 ' -)
 
-DECODED_SECRET_USERNAME=$(echo "$SECRET_USERNAME" | base64 --decode)
-DECODED_SECRET_PASSWORD=$(echo "$SECRET_PASSWORD" | base64 --decode)
+SECRET_MYSQL_DATABASE=$(echo "$GENERATED_YAML" | yq eval '
+  select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.MYSQL_DATABASE
+' -)
 
-if [[ "$DECODED_SECRET_USERNAME" != "prod_admin" ]]; then
-    echo "Secret USERNAME not correct"
+[[ "$(echo "$SECRET_MYSQL_USER" | base64 --decode)" == "prod_admin" ]] || {
+    echo "Secret MYSQL_USER not correct"
     exit 1
-fi
+}
 
-if [[ "$DECODED_SECRET_PASSWORD" != "G7hT9pX2!zQ4" ]]; then
-    echo "Secret PASSWORD not correct"
+[[ "$(echo "$SECRET_MYSQL_PASSWORD" | base64 --decode)" == "G7hT9pX2!zQ4" ]] || {
+    echo "Secret MYSQL_PASSWORD not correct"
     exit 1
-fi
+}
+
+[[ "$(echo "$SECRET_MYSQL_DATABASE" | base64 --decode)" == "prodInventory" ]] || {
+    echo "Secret MYSQL_DATABASE not correct"
+    exit 1
+}
 
 # -----------------------------
 # Replacement checks in StatefulSet
 # -----------------------------
-DB_HOST_VALUE=$(get_env_value DB_HOST)
-DB_PORT_VALUE=$(get_env_value DB_PORT)
-MYSQL_USER_VALUE=$(get_env_value MYSQL_USER)
-MYSQL_PASSWORD_VALUE=$(get_env_value MYSQL_PASSWORD)
-
-if [[ "$DB_HOST_VALUE" != "mysql-prod.company.local" ]]; then
-    echo "DB_HOST not injected into StatefulSet"
+[[ "$(get_env_value MYSQL_HOST)" == "mysql-prod.company.local" ]] || {
+    echo "MYSQL_HOST not injected into StatefulSet"
     exit 1
-fi
+}
 
-if [[ "$DB_PORT_VALUE" != "3306" ]]; then
-    echo "DB_PORT not injected into StatefulSet"
+[[ "$(get_env_value MYSQL_PORT)" == "3306" ]] || {
+    echo "MYSQL_PORT not injected into StatefulSet"
     exit 1
-fi
+}
 
-DECODED_MYSQL_USER=$(echo "$MYSQL_USER_VALUE" | base64 --decode)
-DECODED_MYSQL_PASSWORD=$(echo "$MYSQL_PASSWORD_VALUE" | base64 --decode)
-
-if [[ "$DECODED_MYSQL_USER" != "prod_admin" ]]; then
+[[ "$(get_env_value MYSQL_USER)" == "prod_admin" ]] || {
     echo "MYSQL_USER not injected into StatefulSet"
     exit 1
-fi
+}
 
-if [[ "$DECODED_MYSQL_PASSWORD" != "G7hT9pX2!zQ4" ]]; then
+[[ "$(get_env_value MYSQL_PASSWORD)" == "G7hT9pX2!zQ4" ]] || {
     echo "MYSQL_PASSWORD not injected into StatefulSet"
     exit 1
-fi
+}
 
-echo "All checks passed for prod overlay!"
+[[ "$(get_env_value MYSQL_DATABASE)" == "prodInventory" ]] || {
+    echo "MYSQL_DATABASE not injected into StatefulSet"
+    exit 1
+}
 
+echo "✅ All checks passed for prod overlay!"
