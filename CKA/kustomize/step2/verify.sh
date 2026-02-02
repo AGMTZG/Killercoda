@@ -13,7 +13,7 @@ GENERATED_YAML=$(kubectl kustomize "$BASE_DIR") || {
 }
 
 # -------------------------------------------------
-# Helper function to get env values from StatefulSet
+# Helper: get env value from StatefulSet
 # -------------------------------------------------
 get_env_value () {
   ENV_NAME=$1
@@ -81,7 +81,7 @@ CONFIG_MYSQL_PORT=$(echo "$GENERATED_YAML" | yq eval '
 }
 
 # -----------------------------
-# Secret checks
+# Secret checks (decode here)
 # -----------------------------
 SECRET_MYSQL_USER=$(echo "$GENERATED_YAML" | yq eval '
   select(.kind=="Secret" and .metadata.name=="db-secret-prod") | .data.MYSQL_USER
@@ -112,28 +112,29 @@ SECRET_MYSQL_DATABASE=$(echo "$GENERATED_YAML" | yq eval '
 
 # -----------------------------
 # Replacement checks in StatefulSet
+# (compare base64 ↔ base64)
 # -----------------------------
-[[ "$(get_env_value MYSQL_HOST)" == "mysql-prod.company.local" ]] || {
+[[ "$(get_env_value MYSQL_HOST)" == "$CONFIG_MYSQL_HOST" ]] || {
     echo "MYSQL_HOST not injected into StatefulSet"
     exit 1
 }
 
-[[ "$(get_env_value MYSQL_PORT)" == "3306" ]] || {
+[[ "$(get_env_value MYSQL_PORT)" == "$CONFIG_MYSQL_PORT" ]] || {
     echo "MYSQL_PORT not injected into StatefulSet"
     exit 1
 }
 
-[[ "$(get_env_value MYSQL_USER)" == "prod_admin" ]] || {
+[[ "$(get_env_value MYSQL_USER)" == "$SECRET_MYSQL_USER" ]] || {
     echo "MYSQL_USER not injected into StatefulSet"
     exit 1
 }
 
-[[ "$(get_env_value MYSQL_PASSWORD)" == "G7hT9pX2!zQ4" ]] || {
+[[ "$(get_env_value MYSQL_PASSWORD)" == "$SECRET_MYSQL_PASSWORD" ]] || {
     echo "MYSQL_PASSWORD not injected into StatefulSet"
     exit 1
 }
 
-[[ "$(get_env_value MYSQL_DATABASE)" == "prodInventory" ]] || {
+[[ "$(get_env_value MYSQL_DATABASE)" == "$SECRET_MYSQL_DATABASE" ]] || {
     echo "MYSQL_DATABASE not injected into StatefulSet"
     exit 1
 }
